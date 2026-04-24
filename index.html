@@ -5,61 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>가격표</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f8f9fa; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; font-size: 24px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-        .item-card { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .item-name { font-weight: bold; font-size: 18px; color: #007bff; }
-        .item-price { font-size: 20px; font-weight: bold; margin-top: 5px; }
-        .no-result { text-align: center; color: red; margin-top: 20px; display: none; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; font-size: 22px; margin-bottom: 20px; }
+        #searchInput { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #007bff; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .item-card { border-bottom: 1px solid #eee; padding: 12px 5px; }
+        .item-name { font-weight: bold; font-size: 17px; color: #333; }
+        .item-price { font-size: 19px; font-weight: bold; color: #007bff; margin-top: 4px; }
+        .no-result { text-align: center; color: #999; margin-top: 30px; display: none; }
+        .total-count { font-size: 12px; color: #888; text-align: right; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>📱 가격표</h1>
-    <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="품목명을 검색하세요 (예: 라면)">
-    
-    <div id="itemList">
-        <div class="item-card" data-name="신라면">
-            <div class="item-name">신라면</div>
-            <div class="item-price">1,200 원</div>
-        </div>
-        <div class="item-card" data-name="진라면">
-            <div class="item-name">진라면</div>
-            <div class="item-price">1,100 원</div>
-        </div>
-        <div class="item-card" data-name="참치캔">
-            <div class="item-name">참치캔</div>
-            <div class="item-price">2,500 원</div>
-        </div>
-        <div class="item-card" data-name="햇반">
-            <div class="item-name">햇반</div>
-            <div class="item-price">1,800 원</div>
-        </div>
-    </div>
-    <div id="noResult" class="no-result">검색 결과가 없습니다.</div>
+    <input type="text" id="searchInput" oninput="renderItems()" placeholder="품목명을 검색하세요...">
+    <div id="totalCount" class="total-count"></div>
+    <div id="itemList"></div>
+    <div id="noResult" class="no-result">검색 결과가 없습니다. 🔍</div>
 </div>
 
 <script>
-    function filterItems() {
-        const input = document.getElementById('searchInput').value.toLowerCase();
-        const cards = document.getElementsByClassName('item-card');
-        const noResult = document.getElementById('noResult');
-        let hasVisible = false;
+    // 💡 [여기에 데이터를 한 줄씩 추가하세요]
+    // 콤마(,)와 중괄호{} 형식을 잘 맞춰주시면 됩니다.
+    const priceData = [
+        { name: "신라면", price: 1200 },
+        { name: "진라면", price: 1100 },
+        { name: "참치캔", price: 2500 },
+        { name: "햇반", price: 1800 },
+        { name: "코카콜라", price: 2000 },
+        { name: "삼다수 2L", price: 1000 },
+        // 여기에 계속 추가하세요 (100개 이상도 문제없음)
+    ];
 
-        for (let i = 0; i < cards.length; i++) {
-            const name = cards[i].getAttribute('data-name').toLowerCase();
-            if (name.includes(input)) {
-                cards[i].style.display = "";
-                hasVisible = true;
-            } else {
-                cards[i].style.display = "none";
-            }
+    function renderItems() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const itemList = document.getElementById('itemList');
+        const noResult = document.getElementById('noResult');
+        const totalCount = document.getElementById('totalCount');
+        
+        // 검색 필터링
+        const filtered = priceData.filter(item => item.name.toLowerCase().includes(query));
+        
+        // 화면 그리기
+        if (filtered.length > 0) {
+            itemList.innerHTML = filtered.map(item => `
+                <div class="item-card">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">${item.price.toLocaleString()} 원</div>
+                </div>
+            `).join('');
+            noResult.style.display = "none";
+        } else {
+            itemList.innerHTML = "";
+            noResult.style.display = "block";
         }
-        noResult.style.display = hasVisible ? "none" : "block";
+        
+        totalCount.innerText = `총 ${filtered.length}개 품목`;
     }
+
+    // 처음 실행 시 전체 목록 보여주기
+    renderItems();
 </script>
 
 </body>
