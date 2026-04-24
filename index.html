@@ -2,7 +2,6 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>가격표</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.31.0/build/stlite.css" />
@@ -13,48 +12,43 @@
     <script>
       stlite.mount(
         {
-          requirements: ["pandas"],
+          // 💡 pandas를 제거하여 로딩 속도를 비약적으로 높였습니다.
+          requirements: [], 
           entrypoint: "streamlit_app.py",
           files: {
             "streamlit_app.py": `
 import streamlit as st
-import pandas as pd
 
 st.set_page_config(page_title="가격표", layout="centered")
-st.title("📱 가격표")
+st.title("📱 우리집 가격표")
 
-# 💡 여기에 100여 개의 데이터를 직접 입력합니다. 
-# 엑셀 내용을 아래 형식에 맞춰 붙여넣으세요.
+# 💡 데이터 리스트 (여기에 가격 정보를 넣으세요)
 raw_data = [
     {"품목명": "신라면", "가격": 1200},
     {"품목명": "진라면", "가격": 1100},
     {"품목명": "참치캔", "가격": 2500},
     {"품목명": "햇반", "가격": 1800},
-    {"품목명": "참치마요", "가격": 2200},
     {"품목명": "코카콜라", "가격": 2000},
-    # 추가할 데이터가 있다면 아래에 {"품목명": "이름", "가격": 숫자}, 형태로 계속 넣으시면 됩니다.
 ]
-
-df = pd.DataFrame(raw_data)
-# 가격 숫자에 콤마를 찍기 위해 정수형으로 확실히 변환
-df['가격'] = pd.to_numeric(df['가격']).astype(int)
 
 query = st.text_input("🔍 품목명 검색", placeholder="검색어를 입력하세요")
 
 if query:
-    # 검색어가 포함된 항목 찾기
-    res = df[df['품목명'].str.contains(query, na=False)]
-    if not res.empty:
-        for i, row in res.iterrows():
-            st.info(f"**{row['품목명']}**")
-            st.subheader(f"{row['가격']:,} 원")
+    # Pandas 없이 기본 파이썬으로 검색 기능 구현
+    res = [item for item in raw_data if query in item['품목명']]
+    
+    if res:
+        for item in res:
+            st.info(f"**{item['품목명']}**")
+            st.subheader(f"{item['가격']:,} 원")
             st.divider()
     else:
         st.error("결과가 없습니다.")
 else:
     st.write("---")
-    # 전체 목록 표 (천단위 콤마 적용)
-    st.dataframe(df.style.format({"가격": "{:,}"}), use_container_width=True)
+    # 표 대신 깔끔한 리스트로 전체 출력
+    for item in raw_data:
+        st.text(f"{item['품목명']}: {item['가격']:,}원")
 `,
           },
         },
