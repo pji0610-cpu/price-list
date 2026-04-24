@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>우리집 가격표</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.31.0/build/stlite.css"
+    />
+  </head>
+  <body>
+    <div id="stlite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.31.0/build/stlite.js"></script>
+    <script>
+      stlite.mount(
+        {
+          requirements: ["pandas"], // 필요한 라이브러리
+          entrypoint: "streamlit_app.py",
+          files: {
+            "streamlit_app.py": `
+import streamlit as st
+import pandas as pd
+
+st.set_page_config(page_title="우리집 가격표", layout="centered")
+st.title("📱 우리집 가격표")
+
+# GitHub에 올린 data.csv를 직접 읽어옵니다.
+url = "https://raw.githubusercontent.com/pji0610/my-price/main/data.csv"
+
+try:
+    df = pd.read_csv(url)
+    query = st.text_input("🔍 품목명 검색", placeholder="예: 라면")
+
+    if query:
+        res = df[df['품목명'].str.contains(query, na=False)]
+        if not res.empty:
+            for i, row in res.iterrows():
+                st.info(f"**{row['품목명']}**")
+                st.subheader(f"{row['가격']:,} 원")
+                st.divider()
+        else:
+            st.error("결과가 없습니다.")
+    else:
+        st.write("---")
+        st.dataframe(df, use_container_width=True, hide_index=True)
+except Exception as e:
+    st.error("데이터를 불러오는 중 오류가 발생했습니다. data.csv 파일을 확인해주세요.")
+`,
+          },
+        },
+        document.getElementById("stlite")
+      );
+    </script>
+  </body>
+</html>
