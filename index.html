@@ -9,9 +9,7 @@
         .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #333; font-size: 22px; margin-bottom: 20px; }
         #searchInput { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #007bff; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
-        #searchInput:focus { border-color: #0056b3; box-shadow: 0 0 5px rgba(0,123,255,0.5); }
         .item-card { border-bottom: 1px solid #eee; padding: 12px 5px; }
-        .item-card:last-child { border-bottom: none; }
         .item-name { font-weight: bold; font-size: 17px; color: #333; }
         .item-price { font-size: 19px; font-weight: bold; color: #007bff; margin-top: 4px; }
         .loading { text-align: center; color: #666; padding: 30px; font-size: 14px; }
@@ -23,59 +21,52 @@
 <div class="container">
     <h1>📱 실시간 가격표</h1>
     <input type="text" id="searchInput" oninput="renderItems()" placeholder="품목명을 검색하세요...">
-    <div id="itemList">
-        <div class="loading">데이터를 불러오는 중입니다...</div>
-    </div>
+    <div id="itemList"><div class="loading">데이터를 불러오는 중...</div></div>
 </div>
 
 <script>
-    // 💡 [중요] 시트 ID를 정확히 수정했습니다.
     const sheetId = '1BZCr9Y2uX2WiDGOQMXJKVN12PKkKt2CMFgMXzN9C4mw';
-    const base = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&id=${sheetId}&gid=0`;
+    // 주소 형식을 가장 범용적인 방식으로 변경
+    const base = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
 
     let priceData = [];
 
-    // 구글 시트 데이터 가져오기
     async function fetchSheetData() {
         try {
             const response = await fetch(base);
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error('접근 권한이 없거나 주소가 잘못되었습니다.');
             const data = await response.text();
             
-            const rows = data.split('\n');
+            // 줄바꿈 기호(\r) 처리 강화
+            const rows = data.split(/\r?\n/);
             priceData = [];
 
-            // CSV 파싱 (따옴표와 쉼표 처리)
             for (let i = 1; i < rows.length; i++) {
+                // 쉼표로 분리하되 따옴표 안의 쉼표는 무시하는 정규식
                 const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length >= 2) {
                     const name = cols[0].replace(/"/g, '').trim();
-                    // 가격에서 숫자만 남기고 정수로 변환
                     const priceStr = cols[1].replace(/"/g, '').replace(/[^0-9]/g, '');
                     
                     if (name && priceStr) {
-                        priceData.push({ 
-                            name: name, 
-                            price: parseInt(priceStr) 
-                        });
+                        priceData.push({ name: name, price: parseInt(priceStr) });
                     }
                 }
             }
             renderItems();
         } catch (error) {
-            console.error('Error:', error);
+            console.error(error);
             document.getElementById('itemList').innerHTML = 
-                `<div class="error-msg">데이터 로딩 실패<br><small>구글 시트의 '웹에 게시' 설정을 확인해 주세요.</small></div>`;
+                `<div class="error-msg">⚠️ 데이터를 불러올 수 없습니다.<br>
+                <span style="font-weight:normal; font-size:12px;">1. 구글 시트 '공유' 설정을 '링크가 있는 모든 사용자'로 바꿔보세요.<br>
+                2. 사내 보안망(Wi-Fi) 대신 5G/LTE로 접속해 보세요.</span></div>`;
         }
     }
 
     function renderItems() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const itemList = document.getElementById('itemList');
-        
-        const filtered = priceData.filter(item => 
-            item.name.toLowerCase().includes(query)
-        );
+        const filtered = priceData.filter(item => item.name.toLowerCase().includes(query));
         
         if (filtered.length > 0) {
             itemList.innerHTML = filtered.map(item => `
@@ -85,13 +76,11 @@
                 </div>
             `).join('');
         } else {
-            itemList.innerHTML = `<div class="loading">검색 결과가 없습니다.</div>`;
+            itemList.innerHTML = `<div class="loading">결과가 없습니다.</div>`;
         }
     }
 
-    // 앱 실행 시 데이터 호출
     fetchSheetData();
 </script>
-
 </body>
 </html>
