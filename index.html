@@ -1,59 +1,66 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>가격표</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.31.0/build/stlite.css" />
-  </head>
-  <body>
-    <div id="stlite"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.31.0/build/stlite.js"></script>
-    <script>
-      stlite.mount(
-        {
-          // 💡 pandas를 제거하여 로딩 속도를 비약적으로 높였습니다.
-          requirements: [], 
-          entrypoint: "streamlit_app.py",
-          files: {
-            "streamlit_app.py": `
-import streamlit as st
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리집 가격표</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f8f9fa; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; font-size: 24px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        .item-card { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .item-name { font-weight: bold; font-size: 18px; color: #007bff; }
+        .item-price { font-size: 20px; font-weight: bold; margin-top: 5px; }
+        .no-result { text-align: center; color: red; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
 
-st.set_page_config(page_title="가격표", layout="centered")
-st.title("📱 우리집 가격표")
-
-# 💡 데이터 리스트 (여기에 가격 정보를 넣으세요)
-raw_data = [
-    {"품목명": "신라면", "가격": 1200},
-    {"품목명": "진라면", "가격": 1100},
-    {"품목명": "참치캔", "가격": 2500},
-    {"품목명": "햇반", "가격": 1800},
-    {"품목명": "코카콜라", "가격": 2000},
-]
-
-query = st.text_input("🔍 품목명 검색", placeholder="검색어를 입력하세요")
-
-if query:
-    # Pandas 없이 기본 파이썬으로 검색 기능 구현
-    res = [item for item in raw_data if query in item['품목명']]
+<div class="container">
+    <h1>📱 우리집 가격표</h1>
+    <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="품목명을 검색하세요 (예: 라면)">
     
-    if res:
-        for item in res:
-            st.info(f"**{item['품목명']}**")
-            st.subheader(f"{item['가격']:,} 원")
-            st.divider()
-    else:
-        st.error("결과가 없습니다.")
-else:
-    st.write("---")
-    # 표 대신 깔끔한 리스트로 전체 출력
-    for item in raw_data:
-        st.text(f"{item['품목명']}: {item['가격']:,}원")
-`,
-          },
-        },
-        document.getElementById("stlite")
-      );
-    </script>
-  </body>
+    <div id="itemList">
+        <div class="item-card" data-name="신라면">
+            <div class="item-name">신라면</div>
+            <div class="item-price">1,200 원</div>
+        </div>
+        <div class="item-card" data-name="진라면">
+            <div class="item-name">진라면</div>
+            <div class="item-price">1,100 원</div>
+        </div>
+        <div class="item-card" data-name="참치캔">
+            <div class="item-name">참치캔</div>
+            <div class="item-price">2,500 원</div>
+        </div>
+        <div class="item-card" data-name="햇반">
+            <div class="item-name">햇반</div>
+            <div class="item-price">1,800 원</div>
+        </div>
+    </div>
+    <div id="noResult" class="no-result">검색 결과가 없습니다.</div>
+</div>
+
+<script>
+    function filterItems() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.getElementsByClassName('item-card');
+        const noResult = document.getElementById('noResult');
+        let hasVisible = false;
+
+        for (let i = 0; i < cards.length; i++) {
+            const name = cards[i].getAttribute('data-name').toLowerCase();
+            if (name.includes(input)) {
+                cards[i].style.display = "";
+                hasVisible = true;
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+        noResult.style.display = hasVisible ? "none" : "block";
+    }
+</script>
+
+</body>
 </html>
